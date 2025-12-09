@@ -19,7 +19,7 @@ import {
   Shield,
   Activity,
   Globe,
-  Share2, // 👈 added for Share button
+  Share2, // 👈 Share button icon
 } from "lucide-react";
 
 type TFResult = {
@@ -106,7 +106,7 @@ export default function HomePage() {
   // Button Burst State
   const [isButtonBursting, setIsButtonBursting] = useState(false);
 
-  // 🔊 WIN SOUND – sirf yeh naya hai
+  // 🔊 WIN SOUND
   const winSound = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -182,7 +182,7 @@ export default function HomePage() {
             setShowConfetti(false);
           }, 10000);
         }
-        // agar rank hi nahi mila: no sound + no confetti (kuch nahi karna)
+        // agar rank hi nahi mila: no sound + no confetti
       }
     } catch (err) {
       console.error(err);
@@ -236,7 +236,13 @@ export default function HomePage() {
     ? getPrizeForRank(bestLiveRank)
     : null;
 
-  // 🟡 SHARE ON X (image + text + link)
+  // ✅ Share button sirf tab dikhana jab kisi timeframe me rank mila ho
+  const hasAnyRankToShare =
+    (data?.["24h"]?.rank != null && (data["24h"]!.rank as number) > 0) ||
+    (data?.["7d"]?.rank != null && (data["7d"]!.rank as number) > 0) ||
+    (data?.["30d"]?.rank != null && (data["30d"]!.rank as number) > 0);
+
+  // 🟡 SHARE ON X (dynamic share page + OG image)
   const handleShare = () => {
     if (!data) return;
 
@@ -256,32 +262,35 @@ export default function HomePage() {
     const handle =
       (data.username || username || "").replace(/^@/, "") || "unknown";
 
-    // 🔥 OG image URL (jo tumne /api/share-card me banaya)
-    const imgUrl = `${window.location.origin}/api/share-card?username=${encodeURIComponent(
-      handle,
-    )}&rank=${best ?? ""}&reward=${reward ?? 0}`;
+    // base URL (localhost ya vercel, dono handle)
+    const baseUrl =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "https://zama-rank-next.vercel.app";
 
-    // site link (text ke andar jayega)
-    const siteUrl = window.location.origin;
+    // share page URL jisme OG meta tags honge
+    const params = new URLSearchParams();
+    if (best) params.set("rank", String(best));
+    if (reward) params.set("reward", String(reward));
+
+    const sharePageUrl =
+      `${baseUrl}/share/${encodeURIComponent(handle)}` +
+      (params.toString() ? `?${params.toString()}` : "");
 
     const lines = [
       "🚀 Zama All SZN Rank (Unofficial)",
       "",
       `Handle: @${handle}`,
-      best ? `Best rank this season: #${best}` : "Not in Top 100 yet",
-      reward
-        ? `Speculative reward: ~$${reward.toLocaleString()}`
-        : "",
+      best ? `Best rank this season: #${best}` : undefined,
       "",
-      `Check your rank: ${siteUrl}`,
-    ].filter(Boolean);
+      "Check your rank 👇",
+    ].filter(Boolean) as string[];
 
     const text = lines.join("\n");
 
     const url = new URL("https://twitter.com/intent/tweet");
     url.searchParams.set("text", text);
-    // yaha sirf image URL de rahe hain, taaki X pe image preview aaye
-    url.searchParams.set("url", imgUrl);
+    url.searchParams.set("url", sharePageUrl);
 
     window.open(url.toString(), "_blank", "noopener,noreferrer");
   };
@@ -337,22 +346,18 @@ export default function HomePage() {
             target="_blank"
             rel="noreferrer"
             className="
-    inline-flex items-center gap-1 rounded-full
-    px-3 py-1 text-xs font-medium
-
-    /* STATIC CYBERPUNK GLOW */
-    border border-[#ff2cdf]/60
-    bg-[#ff2cdf]/15
-    shadow-[0_0_18px_rgba(255,44,223,0.65)]
-    backdrop-blur-xl
-    text-[#ffbdf7]
-
-    /* HOVER: EXTREME NEON BLAST */
-    transition-all duration-300
-    hover:shadow-[0_0_30px_rgba(255,44,223,1)]
-    hover:border-[#ff2cdf]
-    hover:text-white
-  "
+              inline-flex items-center gap-1 rounded-full
+              px-3 py-1 text-xs font-medium
+              border border-[#ff2cdf]/60
+              bg-[#ff2cdf]/15
+              shadow-[0_0_18px_rgba(255,44,223,0.65)]
+              backdrop-blur-xl
+              text-[#ffbdf7]
+              transition-all duration-300
+              hover:shadow-[0_0_30px_rgba(255,44,223,1)]
+              hover:border-[#ff2cdf]
+              hover:text-white
+            "
           >
             <Image
               src="/x-logo.svg"
@@ -370,22 +375,18 @@ export default function HomePage() {
             target="_blank"
             rel="noreferrer"
             className="
-    inline-flex items-center gap-1 rounded-full
-    px-3 py-1 text-[11px] font-medium
-
-    /* STATIC YELLOW GLOW */
-    border border-[#fdfd96]/60
-    bg-[#fdfd96]/15
-    shadow-[0_0_18px_rgba(253,253,150,0.65)]
-    backdrop-blur-xl
-    text-[#fffbe0]
-
-    /* HOVER: SUPER BRIGHT GOLD GLOW */
-    transition-all duration-300
-    hover:shadow-[0_0_30px_rgba(253,253,150,1)]
-    hover:border-[#fdfd96]
-    hover:text-white
-  "
+              inline-flex items-center gap-1 rounded-full
+              px-3 py-1 text-[11px] font-medium
+              border border-[#fdfd96]/60
+              bg-[#fdfd96]/15
+              shadow-[0_0_18px_rgba(253,253,150,0.65)]
+              backdrop-blur-xl
+              text-[#fffbe0]
+              transition-all duration-300
+              hover:shadow-[0_0_30px_rgba(253,253,150,1)]
+              hover:border-[#fdfd96]
+              hover:text-white
+            "
           >
             <Image
               src="/zama-logo.png"
@@ -589,18 +590,18 @@ export default function HomePage() {
                       </div>
                       <div className="text-lg font-semibold flex items-center gap-2">
                         {label || username}
-                        {normalizedUsername && (
+                        {normalizedUsername && hasAnyRankToShare && (
                           <button
                             type="button"
                             onClick={handleShare}
                             className="
-      inline-flex items-center gap-1 rounded-full
-      px-2.5 py-0.5 text-[11px] font-medium
-      border border-sky-500/60 bg-sky-500/10
-      text-sky-300
-      hover:bg-sky-500/20 hover:border-sky-400 hover:text-white
-      transition-all
-    "
+                              inline-flex items-center gap-1 rounded-full
+                              px-2.5 py-0.5 text-[11px] font-medium
+                              border border-sky-500/60 bg-sky-500/10
+                              text-sky-300
+                              hover:bg-sky-500/20 hover:border-sky-400 hover:text-white
+                              transition-all
+                            "
                           >
                             <Share2 className="w-3 h-3" />
                             Share on X
