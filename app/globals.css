@@ -24,3 +24,111 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* === 1. BANNER CONFIG === */
+.follow-banner {
+  position: relative;
+  overflow: visible;
+  animation: impactGlow 15s linear infinite;
+}
+
+/* === 2. BIRD AREA === */
+.bird-area {
+  position: absolute;
+  /* Left/Right thoda tight kiya taaki turn pass mein le */
+  left: -40px; right: -40px; top: -50px; 
+  height: 150px; 
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* === 3. GLOWING BIRD CONFIG === */
+.bird-wrapper-path {
+  position: absolute;
+  width: 55px;
+  height: 55px;
+  transform-origin: center;
+  will-change: transform;
+  animation: infinityLoop 15s linear infinite;
+}
+
+.bird-icon-css {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 1)) drop-shadow(0 0 15px rgba(56, 189, 248, 0.6));
+  animation: wingFlap 0.25s ease-in-out infinite alternate;
+}
+
+/* === 4. KEYFRAMES === */
+
+@keyframes wingFlap {
+  0% { transform: scaleY(1) skewX(0deg) translateY(0); }
+  100% { transform: scaleY(0.7) skewX(-8deg) translateY(3px); }
+}
+
+/* INFINITY LOOP (Fixed Left Turn & Reduced Height) */
+@keyframes infinityLoop {
+  /* --- START --- */
+  0% { left: 0%; top: 0%; transform: scaleX(1) rotate(0deg); }
+
+  /* --- SWOOP DOWN --- */
+  10% { left: 40%; top: 40%; transform: scaleX(1) rotate(10deg); }
+
+  /* --- HIT 1 (Right Side Peck) --- */
+  12% { left: 45%; top: 45%; transform: scaleX(1) rotate(25deg); }
+
+  /* --- FLY UP & RIGHT --- */
+  25% { left: 90%; top: -10%; transform: scaleX(1) rotate(-10deg); }
+
+  /* --- RIGHT TURN (Ye Sahi Tha - Same Rakha Hai) --- */
+  30% { left: 100%; top: 20%; transform: scaleX(1) rotate(45deg); }
+  32% { left: 105%; top: 40%; transform: scaleX(0.1) rotate(90deg); } /* 3D Turn */
+  35% { left: 100%; top: 50%; transform: scaleX(-1) rotate(45deg); } /* Palat gayi */
+
+  /* --- RETURN JOURNEY (Height Kam ki hai) --- */
+  /* Pehle top:90% tha, ab top:70% hai (Banner ke pass rahegi) */
+  50% { left: 50%; top: 70%; transform: scaleX(-1) rotate(0deg); }
+
+  /* --- HIT 2 (Left Side Peck) --- */
+  60% { left: 40%; top: 50%; transform: scaleX(-1) rotate(-25deg); }
+
+  /* --- FLY LEFT (Height Kam ki hai) --- */
+  75% { left: 0%; top: 65%; transform: scaleX(-1) rotate(-10deg); }
+
+  /* --- LEFT TURN FIX (Ab ye bhi smooth ghumegi) --- */
+  /* Logic: Bank(-45) -> Thin(-90) -> Exit(-45) */
+  
+  85% { 
+    left: -10%; top: 40%; 
+    transform: scaleX(-1) rotate(-45deg); /* Banking Start */
+  }
+  90% { 
+    left: -15%; top: 20%; 
+    /* Yahan pehle glitch tha, ab smooth 3D turn hai */
+    transform: scaleX(-0.1) rotate(-90deg); 
+  }
+  95% { 
+    left: -5%; top: 0%; 
+    transform: scaleX(1) rotate(-45deg); /* Exit Turn */
+  }
+
+  /* --- DONE --- */
+  100% { left: 0%; top: 0%; transform: scaleX(1) rotate(0deg); }
+}
+
+/* BANNER GLOW */
+@keyframes impactGlow {
+  0%, 11% { box-shadow: none; transform: scale(1); }
+  12% { box-shadow: 0 0 30px rgba(56, 189, 248, 1); border-color: rgba(56, 189, 248, 1); transform: scale(1.02); }
+  15% { box-shadow: none; transform: scale(1); }
+  59% { box-shadow: none; }
+  60% { box-shadow: 0 0 30px rgba(56, 189, 248, 1); border-color: rgba(56, 189, 248, 1); transform: scale(1.02); }
+  63% { box-shadow: none; transform: scale(1); }
+  100% { box-shadow: none; }
+}
+  /* === NEW BUTTON SHINE ANIMATION === */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
