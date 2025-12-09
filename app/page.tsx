@@ -165,9 +165,7 @@ export default function HomePage() {
           // 🔊 sound play
           if (winSound.current) {
             winSound.current.currentTime = 0;
-            winSound.current.play().catch(() => {
-              // browser block kare to ignore
-            });
+            winSound.current.play().catch(() => {});
           }
 
           // 🎉 Confetti trigger
@@ -182,7 +180,6 @@ export default function HomePage() {
             setShowConfetti(false);
           }, 10000);
         }
-        // agar rank hi nahi mila: no sound + no confetti
       }
     } catch (err) {
       console.error(err);
@@ -237,62 +234,51 @@ export default function HomePage() {
     : null;
 
   // ✅ Share button sirf tab dikhana jab kisi timeframe me rank mila ho
-  const hasAnyRankToShare =
-    (data?.["24h"]?.rank != null && (data["24h"]!.rank as number) > 0) ||
-    (data?.["7d"]?.rank != null && (data["7d"]!.rank as number) > 0) ||
-    (data?.["30d"]?.rank != null && (data["30d"]!.rank as number) > 0);
+  const hasAnyRankToShare = Boolean(
+    (data?.["24h"]?.rank && data["24h"]!.rank! > 0) ||
+      (data?.["7d"]?.rank && data["7d"]!.rank! > 0) ||
+      (data?.["30d"]?.rank && data["30d"]!.rank! > 0),
+  );
 
-  // 🟡 SHARE ON X (dynamic share page + OG image)
+  // ✅ Simple Share-on-X: text + promo + website link
   const handleShare = () => {
-    if (!data) return;
+    if (!data || !hasAnyRankToShare) return;
 
-    // best rank nikal lo (24h / 7d / 30d)
     const r24 = data["24h"]?.rank ?? null;
     const r7 = data["7d"]?.rank ?? null;
     const r30 = data["30d"]?.rank ?? null;
 
     const ranks = [r24, r7, r30].filter(
-      (r) => r != null && (r as number) > 0,
+      (r) => typeof r === "number" && r > 0,
     ) as number[];
 
     const best = ranks.length ? Math.min(...ranks) : null;
-    const reward = best ? getPrizeForRank(best) : null;
 
-    // handle for tweet
     const handle =
       (data.username || username || "").replace(/^@/, "") || "unknown";
 
-    // base URL (localhost ya vercel, dono handle)
     const baseUrl =
-      typeof window !== "undefined"
-        ? window.location.origin
-        : "https://zama-rank-next.vercel.app";
-
-    // share page URL jisme OG meta tags honge
-    const params = new URLSearchParams();
-    if (best) params.set("rank", String(best));
-    if (reward) params.set("reward", String(reward));
-
-    const sharePageUrl =
-      `${baseUrl}/share/${encodeURIComponent(handle)}` +
-      (params.toString() ? `?${params.toString()}` : "");
+      process.env.NEXT_PUBLIC_BASE_URL ?? window.location.origin;
+    const siteUrl = baseUrl; // tumhari main website link
 
     const lines = [
       "🚀 Zama All SZN Rank (Unofficial)",
-      "",
       `Handle: @${handle}`,
       best ? `Best rank this season: #${best}` : undefined,
       "",
-      "Check your rank 👇",
+      "Check your Zama creator rank 👇",
+      "",
+      "Built by @0xSyeds – unofficial dashboard for the Zama Creator Program.",
     ].filter(Boolean) as string[];
 
     const text = lines.join("\n");
 
-    const url = new URL("https://twitter.com/intent/tweet");
-    url.searchParams.set("text", text);
-    url.searchParams.set("url", sharePageUrl);
+    const shareUrl = new URL("https://x.com/intent/post");
+    shareUrl.searchParams.set("text", text);
+    // Link tweet ke end me attach hoga
+    shareUrl.searchParams.set("url", siteUrl);
 
-    window.open(url.toString(), "_blank", "noopener,noreferrer");
+    window.open(shareUrl.toString(), "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -346,18 +332,18 @@ export default function HomePage() {
             target="_blank"
             rel="noreferrer"
             className="
-              inline-flex items-center gap-1 rounded-full
-              px-3 py-1 text-xs font-medium
-              border border-[#ff2cdf]/60
-              bg-[#ff2cdf]/15
-              shadow-[0_0_18px_rgba(255,44,223,0.65)]
-              backdrop-blur-xl
-              text-[#ffbdf7]
-              transition-all duration-300
-              hover:shadow-[0_0_30px_rgba(255,44,223,1)]
-              hover:border-[#ff2cdf]
-              hover:text-white
-            "
+    inline-flex items-center gap-1 rounded-full
+    px-3 py-1 text-xs font-medium
+    border border-[#ff2cdf]/60
+    bg-[#ff2cdf]/15
+    shadow-[0_0_18px_rgba(255,44,223,0.65)]
+    backdrop-blur-xl
+    text-[#ffbdf7]
+    transition-all duration-300
+    hover:shadow-[0_0_30px_rgba(255,44,223,1)]
+    hover:border-[#ff2cdf]
+    hover:text-white
+  "
           >
             <Image
               src="/x-logo.svg"
@@ -375,18 +361,18 @@ export default function HomePage() {
             target="_blank"
             rel="noreferrer"
             className="
-              inline-flex items-center gap-1 rounded-full
-              px-3 py-1 text-[11px] font-medium
-              border border-[#fdfd96]/60
-              bg-[#fdfd96]/15
-              shadow-[0_0_18px_rgba(253,253,150,0.65)]
-              backdrop-blur-xl
-              text-[#fffbe0]
-              transition-all duration-300
-              hover:shadow-[0_0_30px_rgba(253,253,150,1)]
-              hover:border-[#fdfd96]
-              hover:text-white
-            "
+    inline-flex items-center gap-1 rounded-full
+    px-3 py-1 text-[11px] font-medium
+    border border-[#fdfd96]/60
+    bg-[#fdfd96]/15
+    shadow-[0_0_18px_rgba(253,253,150,0.65)]
+    backdrop-blur-xl
+    text-[#fffbe0]
+    transition-all duration-300
+    hover:shadow-[0_0_30px_rgba(253,253,150,1)]
+    hover:border-[#fdfd96]
+    hover:text-white
+  "
           >
             <Image
               src="/zama-logo.png"
@@ -419,10 +405,9 @@ export default function HomePage() {
             hover:-translate-y-1
           "
         >
-          {/* 🕊️ ORIGINAL BIRD PLAYGROUND */}
+          {/* Bird */}
           <span className="bird-area">
             <div className="bird-wrapper-path">
-              {/* Original Bird Image */}
               <img
                 src="/bird.png"
                 alt="Flying bird"
@@ -473,7 +458,7 @@ export default function HomePage() {
               {/* search bar + 3D pill button */}
               <div className="flex flex-col sm:flex-row gap-3 mb-1">
                 <div className="flex-1 rounded-full bg-slate-900/80 border border-slate-700/80 px-4 py-2.5 flex items-center gap-3 shadow-[0_18px_40px_rgba(15,23,42,0.9)_inset]">
-                  {/* LABEL: Text X replaced with Logo */}
+                  {/* LABEL */}
                   <span className="hidden md:inline-flex items-center gap-2 select-none">
                     <Image
                       src="/x-logo.svg"
@@ -496,7 +481,7 @@ export default function HomePage() {
                   />
                 </div>
 
-                {/* 🔥 UPDATED PREMIUM 3D CYBERPUNK BUTTON WITH EMOJI BURST */}
+                {/* SEARCH BUTTON */}
                 <button
                   onClick={handleCheck}
                   disabled={loading}
@@ -517,7 +502,7 @@ export default function HomePage() {
                   {/* SHINE EFFECT */}
                   <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1s_infinite] bg-gradient-to-r from-transparent via-white/60 to-transparent z-10" />
 
-                  {/* === EMOJI BURST PARTICLES CONTAINER (z-15) === */}
+                  {/* EMOJI BURST */}
                   {isButtonBursting && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-15">
                       {burstParticlesData.map((p) => (
@@ -541,7 +526,7 @@ export default function HomePage() {
                     </div>
                   )}
 
-                  {/* BUTTON TEXT & ICON (z-20) */}
+                  {/* BUTTON TEXT */}
                   <span className="relative z-20 flex items-center gap-2">
                     {loading ? (
                       <>
@@ -595,13 +580,13 @@ export default function HomePage() {
                             type="button"
                             onClick={handleShare}
                             className="
-                              inline-flex items-center gap-1 rounded-full
-                              px-2.5 py-0.5 text-[11px] font-medium
-                              border border-sky-500/60 bg-sky-500/10
-                              text-sky-300
-                              hover:bg-sky-500/20 hover:border-sky-400 hover:text-white
-                              transition-all
-                            "
+      inline-flex items-center gap-1 rounded-full
+      px-2.5 py-0.5 text-[11px] font-medium
+      border border-sky-500/60 bg-sky-500/10
+      text-sky-300
+      hover:bg-sky-500/20 hover:border-sky-400 hover:text-white
+      transition-all
+    "
                           >
                             <Share2 className="w-3 h-3" />
                             Share on X
@@ -791,7 +776,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* === NEW: FEATURES GRID (Filling the empty space) === */}
+          {/* FEATURES GRID */}
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
             {/* Feature 1 */}
             <div className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/40 p-6 backdrop-blur-sm transition-all hover:bg-slate-900/60 hover:border-slate-700 hover:-translate-y-1">
@@ -845,7 +830,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* === NEW: LIVE SYSTEM STATUS FOOTER === */}
+          {/* FOOTER */}
           <div className="mt-12 border-t border-slate-800/50 pt-8 pb-10">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               {/* Status Indicators */}

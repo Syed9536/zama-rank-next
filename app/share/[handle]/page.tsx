@@ -1,108 +1,61 @@
-// app/share/[handle]/page.tsx
-import type { Metadata, ResolvingMetadata } from "next";
+import { ImageResponse } from "next/og";
 
-type SharePageProps = {
-  params: { handle: string };
-  searchParams: {
-    rank?: string;
-    reward?: string;
-  };
-};
+export const runtime = "edge";
 
-// ✅ OG + Twitter card metadata
-export async function generateMetadata(
-  { params, searchParams }: SharePageProps,
-  _parent: ResolvingMetadata
-): Promise<Metadata> {
-  const handle = params.handle;
-  const rank = searchParams.rank || "";
-  const reward = searchParams.reward || "";
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
 
-  // 👇 apna actual prod domain daal dena
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    "https://zama-rank-next.vercel.app";
+  const username = searchParams.get("username") || "Unknown";
+  const rank = searchParams.get("rank") || "N/A";
+  const reward = searchParams.get("reward") || "0";
+  const top = searchParams.get("top") || "—";
 
-  const ogImageUrl =
-    `${baseUrl}/api/share-card` +
-    `?username=${encodeURIComponent(handle)}` +
-    (rank ? `&rank=${encodeURIComponent(rank)}` : "") +
-    (reward ? `&reward=${encodeURIComponent(reward)}` : "");
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: "1200px",
+          height: "630px",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          padding: "40px",
+          background: "linear-gradient(135deg, #020617, #1e293b)",
+          color: "white",
+          fontFamily: "sans-serif",
+          border: "20px solid #fbbf24",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "20px" }}>
+           <h1 style={{ fontSize: 60, fontWeight: 900, background: "linear-gradient(90deg,#fbbf24,#f472b6,#38bdf8)", backgroundClip: "text", color: "transparent", margin: 0 }}>
+             Zama Rank
+           </h1>
+        </div>
 
-  const pageUrl =
-    `${baseUrl}/share/${encodeURIComponent(handle)}` +
-    (rank || reward
-      ? `?${new URLSearchParams({
-          ...(rank ? { rank } : {}),
-          ...(reward ? { reward } : {}),
-        }).toString()}`
-      : "");
+        <div style={{ fontSize: 40, color: "#94a3b8" }}>@{username}</div>
 
-  const title = rank
-    ? `Zama Rank — @${handle} #${rank}`
-    : `Zama Rank — @${handle}`;
+        <div style={{ display: "flex", gap: "40px", marginTop: "40px" }}>
+           <div style={{ display: "flex", flexDirection: "column" }}>
+              <span style={{ fontSize: 24, color: "#64748b", textTransform: "uppercase", letterSpacing: "2px" }}>Rank</span>
+              <span style={{ fontSize: 80, fontWeight: 900, color: "#fbbf24" }}>#{rank}</span>
+           </div>
+           
+           {reward !== "0" && (
+             <div style={{ display: "flex", flexDirection: "column" }}>
+                <span style={{ fontSize: 24, color: "#64748b", textTransform: "uppercase", letterSpacing: "2px" }}>Reward</span>
+                <span style={{ fontSize: 80, fontWeight: 900, color: "#34d399" }}>${reward}</span>
+             </div>
+           )}
+        </div>
 
-  const description =
-    "Unofficial Zama All SZN Rank dashboard. Check your placement & speculative rewards.";
-
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      url: pageUrl,
-      type: "website",
-      images: [
-        {
-          url: ogImageUrl,
-          width: 1200,
-          height: 630,
-          alt: `Zama Rank card for @${handle}`,
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [ogImageUrl],
-    },
-  };
-}
-
-// Simple page (user kabhi direct open kare to blank na lage)
-export default function SharePage({ params, searchParams }: SharePageProps) {
-  const { handle } = params;
-  const rank = searchParams.rank;
-  const reward = searchParams.reward;
-
-  return (
-    <main className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100">
-      <div className="max-w-md text-center space-y-3 px-4">
-        <h1 className="text-lg font-semibold">
-          Zama All SZN Rank — Share Card
-        </h1>
-        <p className="text-sm text-slate-300">
-          This page is used as a share preview for{" "}
-          <span className="font-mono">@{handle}</span>.
-        </p>
-        {rank && (
-          <p className="text-sm">
-            <span className="text-slate-400">Best rank:</span>{" "}
-            <span className="font-semibold">#{rank}</span>
-          </p>
-        )}
-        {reward && (
-          <p className="text-sm">
-            <span className="text-slate-400">Speculative reward:</span>{" "}
-            <span className="font-semibold">${reward}</span>
-          </p>
-        )}
-        <p className="text-xs text-slate-500">
-          Open this link on X to see the full preview card.
-        </p>
+        <div style={{ position: "absolute", bottom: "40px", right: "40px", fontSize: 20, color: "#475569" }}>
+           Check yours at zamarank.live
+        </div>
       </div>
-    </main>
+    ),
+    {
+      width: 1200,
+      height: 630,
+    }
   );
 }
